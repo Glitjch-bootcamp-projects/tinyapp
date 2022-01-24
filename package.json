@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/glitjch/tinyapp/issues"
   },
-  "homepage": "https://github.com/glitjch/tinyapp#readme"
+  "homepage": "https://github.com/glitjch/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
 }
