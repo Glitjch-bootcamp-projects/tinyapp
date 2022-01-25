@@ -20,10 +20,12 @@ const urlDatabase = {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  const shortURL = generateUid;
-  urlDatabase[shortURL()] = req.body.longURL;
+  const shortURL = generateUid();
+  urlDatabase[shortURL] = req.body.longURL;
   console.log(urlDatabase);
+  res.redirect(`/urls/${shortURL}`);
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
+
 
 });
 
