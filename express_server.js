@@ -29,6 +29,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+// updating already existing shortURL with a different longURL
+app.post("/urls/:shortURL/update", (req, res) => {
+// use the same short url and assign the new long url
+  const longURL = req.body.longURL;
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = longURL;
+  console.log(urlDatabase);
+  res.send('trying to update?')
+  // res.redirect('/urls');
+});
+
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   const shortURL = generateUid();
@@ -42,6 +53,7 @@ app.get('/u/:shortURL', (req, res) => {
   const longURL = urlDatabase[short];
   res.redirect(longURL);
 })
+
 
 // redirect to urls because nothing is on root page
 app.get("/", (req, res) => {
