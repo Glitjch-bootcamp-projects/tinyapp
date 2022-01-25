@@ -7,36 +7,48 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 
+// random id generator
 const generateUid = function() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(12).substring(1);
 };
 
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
 
+// Database here
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+// delete an entry
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
+});
 
+// lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   const shortURL = generateUid();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
+// redirecting to specific link outside of tinyapp
 app.get('/u/:shortURL', (req, res) => {
   const short = req.params.shortURL;  
   const longURL = urlDatabase[short];
   res.redirect(longURL);
 })
 
+// redirect to urls because nothing is on root page
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  // res.send("Hello!");
+  res.redirect('/urls');
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 
 app.get("/urls", (req, res) => {
     const templateVars = { urls: urlDatabase };
