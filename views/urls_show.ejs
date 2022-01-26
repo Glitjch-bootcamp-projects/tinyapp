@@ -17,6 +17,7 @@
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
         <div>
           <form method="POST" action="/urls/<%= shortURL %>/update">
+            <h2>Edit</h2>
             <input class="form-control" type="text" name="longURL" placeholder="http://update-your-link-here" style="width: 500px; margin: 1em; text-align: center;">
             <button type="submit" class="btn btn-primary">Update Your Link</button>
           </form>

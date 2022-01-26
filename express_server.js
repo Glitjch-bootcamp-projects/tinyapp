@@ -31,20 +31,24 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // updating already existing shortURL with a different longURL
 app.post("/urls/:shortURL/update", (req, res) => {
-// use the same short url and assign the new long url
   const longURL = req.body.longURL;
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = longURL;
   console.log(urlDatabase);
-  res.send('trying to update?')
-  // res.redirect('/urls');
+  res.redirect('/urls');
 });
+
 
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   const shortURL = generateUid();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
+});
+
+// On the url page link to update link page
+app.post("/urls/:shortURL/edit", (req, res) => {
+  res.redirect(`/urls/${req.params.shortURL}`);
 });
 
 // redirecting to specific link outside of tinyapp
