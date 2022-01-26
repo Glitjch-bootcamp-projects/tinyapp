@@ -14,9 +14,11 @@ const generateUid = function() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(12).substring(1);
 };
 
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
 // Database here
 const urlDatabase = {
@@ -24,14 +26,14 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
 // after user logs in their name, use cookie and redirect to home page. display their name
 app.post('/login', (req, res) => {
   const name = req.body.username;
   res.cookie("username", name);
-
-  // const requestCookies = req.cookies
   res.redirect('/urls');
 });
+
 
 // delete an entry
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -39,6 +41,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect('/urls');
 });
+
 
 // updating already existing shortURL with a different longURL
 app.post("/urls/:shortURL/update", (req, res) => {
@@ -57,9 +60,20 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+
 // On the url page link to update link page
 app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
+});
+
+
+// when user clicks logout, clears username cookie and redirects to url
+app.post('/logout', (req, res) => {
+  // console.log(req.cookie);
+  // const username = req.cookie[username];
+  // delete username;
+  res.clearCookie("username");
+  res.redirect('/urls');
 });
 
 
