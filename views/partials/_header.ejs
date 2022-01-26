@@ -10,6 +10,7 @@
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         </div>
       </div>
+      
       <% if (username) { %>
         <h5 style="text-align: right;"> you are logged in as <%= username %></h5>
         <form method="POST" action="/logout">
@@ -17,7 +18,7 @@
         </form>
         <% } else {%>
         <form method="POST" action="/login">
-            <input class="form-group" type="text" name="username" placeholder="Your Name Here" style="width:300px; margin:1em">
+            <!-- <input class="form-group" type="text" name="username" placeholder="Your Name Here" style="width:300px; margin:1em"> -->
             <button class="btn-primary" type="submit">Login</button>
         </form>
         <% } %>
