@@ -8,6 +8,12 @@
         <div class="navbar-nav">
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+          <a class="nav-item nav-link" href="/urls/login">
+            <form method="post" action="/urls/login">
+                <input type="text" class="form-control" name="name" placeholder="Your Name Here" style="width:300px">
+                <button class="btn btn-primary" type="submit" >Login</button>
+            </form>
+          </a>
         </div>
       </div>
     </nav>
