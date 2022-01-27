@@ -134,7 +134,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 // 
 // REGISTRATION
 app.post('/register', (req, res) => {
-  // console.log("submit register button pushed");
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   const generateID = generateUid();
@@ -161,11 +160,14 @@ app.post('/register', (req, res) => {
 //
 //         
 app.get('/registration', (req, res) => {
-  console.log("hello registration");
-  const templateVars = {
-    user: users[req.cookies.user_ID],
-  };
-  res.render('registration', templateVars);
+  if (!req.cookies["user_ID"]) {
+    const templateVars = {
+      user: users[req.cookies.user_ID],
+    };
+    res.render('registration', templateVars);
+  } else {
+    res.redirect('/urls');
+  }
 });
 //===================================================
 
@@ -194,10 +196,14 @@ app.post('/login', (req, res) => {
 //
 // 
 app.get('/login', (req, res) => {
-  const templateVars = {
-    user: users[req.cookies.user_ID],
-  };
-  res.render('login', templateVars);
+  if (!req.cookies["user_ID"]) {
+    const templateVars = {
+      user: users[req.cookies.user_ID],
+    };
+    res.render('login', templateVars);
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 
