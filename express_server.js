@@ -68,7 +68,14 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-
+// const displayUserURLsOnly = function(id) {
+//   let userURLDatabase = {};
+//   for (const id in urlDatabase) {
+//     if (id === req.params['user_ID']){
+//   }
+//   }
+//   return userURLDatabase;
+// };
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   if (req.cookies["user_ID"]) {
