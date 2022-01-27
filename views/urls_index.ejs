@@ -28,7 +28,9 @@
           </tr>
         </thead>
         <tbody>
-          <% for(let url in urls) { %>
+          <% for (let url in urls) { %>
+            <!-- ***NOTE01 - line immediately below: ONLY display URLs with matching logged in user_ID -->
+            <% if (urls[url].user_ID === user_ID) { %>
             <tr>
               <td>
                 <a href="/u/<%= url %>"><%= url %></a>
@@ -44,6 +46,7 @@
               </td>
             </tr>
             <% } %>
+          <% } %>
         </tbody>
       </table>
     <% } else { %>

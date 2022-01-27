@@ -41,15 +41,17 @@ const passwordMatches = function (email, password) {
   return false;
 };
 
+// Did not use function urlsForUser(id) to return the URLs where the userID is equal to the id of the currently logged-in user. SEE urls_index.ejs ***NOTE01.
+
 //****************************DATABASE*********************************/
 const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    user_ID: 000000
+    user_ID: "ooo"
   },
   sm5xK8: {
     longURL: "http://www.google.com",
-    user_ID: 111111
+    user_ID: "iii"
   }
 };
 
@@ -68,14 +70,7 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-// const displayUserURLsOnly = function(id) {
-//   let userURLDatabase = {};
-//   for (const id in urlDatabase) {
-//     if (id === req.params['user_ID']){
-//   }
-//   }
-//   return userURLDatabase;
-// };
+
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   if (req.cookies["user_ID"]) {
@@ -99,6 +94,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_ID],
+    user_ID: req.cookies['user_ID'],
   };
   res.render("urls_index", templateVars);
 });
