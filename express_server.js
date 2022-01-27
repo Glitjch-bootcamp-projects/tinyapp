@@ -4,6 +4,9 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const bcrypt = require('bcryptjs');
+const bcryptjs = require("bcryptjs");
+
 
 app.set('view engine', 'ejs');
 
@@ -24,6 +27,8 @@ const generateUid = function () {
 
 const emailAlreadyExists = function (email) {
   for (const id in users) {
+    console.log('log of emails: ', id);
+    console.log('log of users[id].email: ', users[id].email);
     if (users[id].email === email) {
       return true;
     }
@@ -179,11 +184,12 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 // 
 // REGISTRATION
 app.post('/register', (req, res) => {
+  console.log("New user registered!");
   const userEmail = req.body.email;
-  const userPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   const generateID = generateUid();
 
-  if (!userEmail || !userPassword) {
+  if (!userEmail || !hashedPassword) {
     res.statusCode = 400;
     res.send("error 400. Invalid email or password");
     res.end();
@@ -197,8 +203,9 @@ app.post('/register', (req, res) => {
   users[generateID] = {
     id: generateID,
     email: userEmail,
-    password: userPassword
+    password: hashedPassword
   };
+  console.log(users[generateID]);
   res.cookie('user_ID', generateID);
   res.redirect('/urls');
 });
@@ -222,18 +229,18 @@ app.get('/registration', (req, res) => {
 //
 app.post('/login', (req, res) => {
   const userEmail = req.body.email;
-  const userPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   if (!emailAlreadyExists(userEmail)) {
     res.statusCode = 403;
     res.send('Error 403. Email not found.');
     res.end();
   }
-  if (!passwordMatches(userEmail, userPassword)) {
+  if (!passwordMatches(userEmail, hashedPassword)) {
     res.statusCode = 403;
     res.send('Error 403. Password does not match.');
     res.end();
   } else {
-    const user = passwordMatches(userEmail, userPassword);
+    const user = passwordMatches(userEmail, hashedPassword);
     res.cookie('user_ID', user);
     res.redirect('/urls');
   }
