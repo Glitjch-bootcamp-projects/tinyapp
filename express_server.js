@@ -132,7 +132,13 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_ID],
   };
-  res.render("urls_show", templateVars);
+  const shortURL = req.params.shortURL;
+  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.send("Error. You do not have permission to access this link. \n");
+    res.end();
+  }
 });
 
 
