@@ -31,6 +31,16 @@ const emailAlreadyExists = function (email) {
   return false;
 };
 
+
+const passwordMatches = function (email, password) {
+  for (const id in users) {
+    if (users[id].email === email && users[id].password === password) {
+      return id;
+    }
+  }
+  return false;
+};
+
 //****************************DATABASE*********************************/
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -40,7 +50,7 @@ const urlDatabase = {
 const users = {
   ooo: {
     id: "ooo",
-    email: "t.jamesphan@gmail.com",
+    email: "t.jamesphan@example.com",
     password: "meow"
   }
 
@@ -130,7 +140,6 @@ app.post('/register', (req, res) => {
   const generateID = generateUid();
 
   if (!userEmail || !userPassword) {
-    console.log(users);
     res.statusCode = 400;
     res.send("error 400. Invalid email or password");
     res.end();
@@ -146,7 +155,6 @@ app.post('/register', (req, res) => {
     email: userEmail,
     password: userPassword
   };
-  // console.log(users[generateID].email);
   res.cookie('user_ID', generateID);
   res.redirect('/urls');
 });
@@ -164,23 +172,36 @@ app.get('/registration', (req, res) => {
 
 //
 // LOGIN
-// after user logs in their name, use cookie and redirect to home page. display their name
+//
 app.post('/login', (req, res) => {
-  // const name = req.body.username;
-  // res.cookie("username", name);
-  res.redirect('/login');
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  if (!emailAlreadyExists(userEmail)) {
+    res.statusCode = 403;
+    res.send('Error 403. Email not found.');
+    res.end();
+  }
+  if (!passwordMatches(userEmail, userPassword)) {
+    res.statusCode = 403;
+    res.send('Error 403. Password does not match.');
+    res.end();
+  } else {
+    const user = passwordMatches(userEmail, userPassword);
+    res.cookie('user_ID', user);
+    res.redirect('/urls');
+  }
 });
 //
+// 
 app.get('/login', (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_ID],
   };
-  // const name = req.body.username;
   res.render('login', templateVars);
 });
 
 
-// clear username cookie when clicking logout button, and redirects to home
+// clear cookie when clicking logout button, and redirects to home
 app.post('/logout', (req, res) => {
   res.clearCookie("user_ID");
   res.redirect('/urls');

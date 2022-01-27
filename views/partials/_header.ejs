@@ -1,27 +1,29 @@
 <header>
-    <nav class="navbar navbar-expand-md navbar-dark bg-success">
-      <a class="navbar-brand" href="/urls">TinyApp</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link" href="/urls">My URLs</a>
-          <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        </div>
+  <nav class="navbar navbar-expand-md navbar-dark bg-success">
+    <a class="navbar-brand" href="/urls">TinyApp</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="/urls">My URLs</a>
+        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if (user) { %>
-        <h5 style="text-align: right;"> you are logged in as <%= user.email %></h5>
-        <form method="POST" action="/logout">
+    </div>
+    <% if (user) { %>
+      <h5 style="text-align: right;"> you are logged in as <%= user.email %>
+      </h5>
+      <form method="POST" action="/logout">
         <button class="button" type="submit" style="margin-left: 20px;">Logout</button>
-        </form>
-        <% } else {%>
+      </form>
+      <% } else {%>
         <form method="GET" action="/login">
-            <button class="btn-primary" type="submit">Login</button>
+          <button class="btn-primary" type="submit">Login</button>
         </form>
         <form method="GET" action="/registration">
-            <button class="btn-primary" type="submit">Register</button>
+          <button class="btn-primary" type="submit">Register</button>
         </form>
         <% } %>
-    </nav>
-  </header>
+  </nav>
+</header>
