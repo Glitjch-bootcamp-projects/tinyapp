@@ -43,8 +43,14 @@ const passwordMatches = function (email, password) {
 
 //****************************DATABASE*********************************/
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2 : {
+    longURL: "http://www.lighthouselabs.ca",
+    user_ID: 000000 
+  },
+  sm5xK8 : {
+    longURL: "http://www.google.com",
+    user_ID: 111111 
+  }
 };
 
 const users = {
@@ -66,7 +72,8 @@ app.get("/", (req, res) => {
 app.post("/urls", (req, res) => {
   if (req.cookies["user_ID"]) {
     const shortURL = generateUid();
-    urlDatabase[shortURL] = req.body.longURL;
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    urlDatabase[shortURL].user_ID = req.cookies['user_ID'];
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.send('Error. You must first sign in.');
@@ -107,7 +114,8 @@ app.get("/urls/new", (req, res) => {
 // display the long url on a new page with the new short URL generation 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
-    shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_ID],
   };
   res.render("urls_show", templateVars);
@@ -126,12 +134,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL/update", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL].longURL = longURL;
   res.redirect('/urls');
 });
 
 
-// link to update-shortURL page, from home page
+// link to edit shortURL page, from home page
 app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
 });
@@ -223,8 +231,8 @@ app.post('/logout', (req, res) => {
 
 // redirecting to specific link outside of tinyapp
 app.get('/u/:shortURL', (req, res) => {
-  const short = req.params.shortURL;
-  const longURL = urlDatabase[short];
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 })
 
