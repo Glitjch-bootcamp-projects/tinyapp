@@ -166,9 +166,17 @@ app.get('/registration', (req, res) => {
 // LOGIN
 // after user logs in their name, use cookie and redirect to home page. display their name
 app.post('/login', (req, res) => {
-  const name = req.body.username;
-  res.cookie("username", name);
-  res.redirect('/urls');
+  // const name = req.body.username;
+  // res.cookie("username", name);
+  res.redirect('/login');
+});
+//
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.user_ID],
+  };
+  // const name = req.body.username;
+  res.render('login', templateVars);
 });
 
 
