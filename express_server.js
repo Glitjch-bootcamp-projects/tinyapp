@@ -52,8 +52,17 @@ const urlDatabase = {
   sm5xK8: {
     longURL: "http://www.google.com",
     user_ID: "iii"
+  },
+  o95xK8: {
+    longURL: "http://www.google.com",
+    user_ID: "iii"
+  },
+  rt5xK8: {
+    longURL: "http://www.google.com",
+    user_ID: "iii"
   }
 };
+
 
 const users = {
   ooo: {
@@ -61,7 +70,6 @@ const users = {
     email: "t.jamesphan@example.com",
     password: "meow"
   }
-
 };
 //******************************ROUTES*********************************/
 
@@ -131,8 +139,13 @@ app.get("/urls/:shortURL", (req, res) => {
 // delete an entry
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.send("Error. You do not have permission to delete or modify this link. \n");
+    res.end();
+  }
 });
 
 
@@ -140,8 +153,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL/update", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL].longURL = longURL;
-  res.redirect('/urls');
+  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
+    urlDatabase[shortURL].longURL = longURL;
+    res.redirect('/urls');
+  } else {
+    res.send("Error. You do not have permission to delete or modify this link. \n");
+    res.end();
+  }
 });
 
 
