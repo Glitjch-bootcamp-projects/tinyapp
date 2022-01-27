@@ -62,12 +62,15 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
-
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
-  const shortURL = generateUid();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  if (req.cookies["user_ID"]) {
+    const shortURL = generateUid();
+    urlDatabase[shortURL] = req.body.longURL;
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.send('Error. You must first sign in.');
+  }
 });
 
 
@@ -90,10 +93,14 @@ app.get("/urls", (req, res) => {
 
 // create a new entry URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies.user_ID],
-  };
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_ID"]) {
+    const templateVars = {
+      user: users[req.cookies.user_ID],
+    };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 
