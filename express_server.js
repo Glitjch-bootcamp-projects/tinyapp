@@ -43,13 +43,13 @@ const passwordMatches = function (email, password) {
 
 //****************************DATABASE*********************************/
 const urlDatabase = {
-  b2xVn2 : {
+  b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    user_ID: 000000 
+    user_ID: 000000
   },
-  sm5xK8 : {
+  sm5xK8: {
     longURL: "http://www.google.com",
-    user_ID: 111111 
+    user_ID: 111111
   }
 };
 
@@ -68,12 +68,15 @@ app.get("/", (req, res) => {
   res.redirect('/urls');
 });
 
+
 // lead to a page to display the LongUrl after the shortURL is generated
 app.post("/urls", (req, res) => {
   if (req.cookies["user_ID"]) {
     const shortURL = generateUid();
-    urlDatabase[shortURL].longURL = req.body.longURL;
-    urlDatabase[shortURL].user_ID = req.cookies['user_ID'];
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      user_ID: req.cookies['user_ID']
+    };
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.send('Error. You must first sign in.');
@@ -114,7 +117,7 @@ app.get("/urls/new", (req, res) => {
 // display the long url on a new page with the new short URL generation 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
-    shortURL: req.params.shortURL, 
+    shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.cookies.user_ID],
   };
@@ -231,6 +234,10 @@ app.post('/logout', (req, res) => {
 
 // redirecting to specific link outside of tinyapp
 app.get('/u/:shortURL', (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("error. That short URL does not exist.")
+    res.end()
+  }
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
