@@ -25,16 +25,19 @@ const generateUid = function () {
 };
 
 
-const emailAlreadyExists = function (email) {
+const verifyUserByEmail = function (email, password) {
   for (const id in users) {
-    console.log('log of emails: ', id);
-    console.log('log of users[id].email: ', users[id].email);
     if (users[id].email === email) {
-      return true;
+      const compare = bcrypt.compareSync(password, users[id].password);
+      if (compare) {
+        return users[id];
+      }
+      return false;
     }
   }
   return false;
 };
+
 
 
 const passwordMatches = function (email, password) {
@@ -52,14 +55,14 @@ const passwordMatches = function (email, password) {
 const urlDatabase = {
   b2xVn2: {
     longURL: "http://www.lighthouselabs.ca",
-    user_ID: "ooo"
+    user_ID: "i89a"
   },
   sm5xK8: {
     longURL: "http://www.google.com",
-    user_ID: "iii"
+    user_ID: "i89a"
   },
   o95xK8: {
-    longURL: "http://www.google.com",
+    longURL: "http://www.nintendo.com",
     user_ID: "iii"
   },
   rt5xK8: {
@@ -70,10 +73,10 @@ const urlDatabase = {
 
 
 const users = {
-  ooo: {
-    id: "ooo",
-    email: "t.jamesphan@example.com",
-    password: "meow"
+  i89a: {
+    id: 'i89a',
+    email: 'Jelly@bean.com',
+    password: '$2a$10$LkHgq6hcVSBZywIhRapfSOJPi1S33lGvYX1Pu4Ne/CeweCa1OnfeK'
   }
 };
 //******************************ROUTES*********************************/
@@ -228,22 +231,16 @@ app.get('/registration', (req, res) => {
 // LOGIN
 //
 app.post('/login', (req, res) => {
+  console.log('log /login');
   const userEmail = req.body.email;
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-  if (!emailAlreadyExists(userEmail)) {
-    res.statusCode = 403;
-    res.send('Error 403. Email not found.');
-    res.end();
-  }
-  if (!passwordMatches(userEmail, hashedPassword)) {
+  const user = verifyUserByEmail(userEmail, req.body.password);
+  if (!user) {
     res.statusCode = 403;
     res.send('Error 403. Password does not match.');
     res.end();
-  } else {
-    const user = passwordMatches(userEmail, hashedPassword);
-    res.cookie('user_ID', user);
-    res.redirect('/urls');
   }
+  res.cookie('user_ID', user.id);
+  res.redirect('/urls');
 });
 //
 // 
