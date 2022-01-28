@@ -223,14 +223,13 @@ app.post('/login', (req, res) => {
 
 
 app.get('/login', (req, res) => {
-  if (!req.session.user_id) {
-    const templateVars = {
-      user: users[req.session.user_id],
-    };
-    res.render('login', templateVars);
-  } else {
+  if (req.session.user_id) {
     res.redirect('/urls');
   }
+  const templateVars = {
+    user: users[req.session.user_id]
+  };
+  res.render('login', templateVars);
 });
 
 

@@ -14,8 +14,6 @@ const generateHelpers = (bcrypt) => {
 	};
 
 	const verifyPassword = function (userId, password, database) {
-		console.log('log', userId);
-		console.log('log', database[userId]);
 		const compare = bcrypt.compareSync(password, database[userId].password);
 		if (!compare) {
 			return false;
