@@ -1,67 +1,25 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
-const bcryptjs = require("bcryptjs");
+const morgan = require('morgan');
 const cookieSession = require('cookie-session');
+const generateHelpers = require('./helpers');
 
+const {verifyUserByEmailorPassword, generateUid}  = generateHelpers(bcrypt);
 
 app.set('view engine', 'ejs');
-
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(cookieSession({
   name: 'session',
   keys: ["the wheels on the bus go square and square", "jonny", "bonnie"],
 }));
 
+const PORT = 8080;
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-//***********************FUNCTION TOOLS********************************/
-const generateUid = function () {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(12).substring(1);
-};
-
-
-const verifyUserByEmailandPassword = function (email, password) {
-  for (const id in users) {
-    if (users[id].email === email) {
-      const compare = bcrypt.compareSync(password, users[id].password);
-      if (compare) {
-        return users[id];
-      }
-      return false;
-    }
-  }
-  return false;
-};
-
-const emailAlreadyExists = function (email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-const passwordMatches = function (email, password) {
-  for (const id in users) {
-    if (users[id].email === email && users[id].password === password) {
-      return id;
-    }
-  }
-  return false;
-};
-
-// Did not use function urlsForUser(id) to return the URLs where the userID is equal to the id of the currently logged-in user. SEE urls_index.ejs ***NOTE01.
 
 //****************************DATABASE*********************************/
 const urlDatabase = {
@@ -201,6 +159,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post('/register', (req, res) => {
   console.log("New user registered!");
   const userEmail = req.body.email;
+  const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   const user_ID = generateUid();
 
@@ -209,7 +168,7 @@ app.post('/register', (req, res) => {
     res.send("error 400. Invalid email or password");
     res.end();
   }
-  if (emailAlreadyExists(userEmail) === true) {
+  if (verifyUserByEmailorPassword(userEmail, password, users)) {
     res.statusCode = 400;
     res.send("error 400. Email already exists.");
     res.end();
@@ -247,7 +206,8 @@ app.get('/registration', (req, res) => {
 app.post('/login', (req, res) => {
   console.log('log: client attempting to log in');
   const userEmail = req.body.email;
-  const user = verifyUserByEmailandPassword(userEmail, req.body.password);
+  login = true;
+  const user = verifyUserByEmailorPassword(userEmail, req.body.password, users, login);
   if (!user) {
     res.statusCode = 403;
     res.send('Error 403. Password or username do not match.');
