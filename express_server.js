@@ -52,7 +52,7 @@ const users = {
 
 //******************************ROUTES*********************************/
 
-// redirect to main
+// redirects to main or login page
 app.get("/", (req, res) => {
   if (!req.session.user_id) {
     res.redirect('/login');
@@ -61,12 +61,11 @@ app.get("/", (req, res) => {
 });
 
 
-// generate shortURL and redirect to its detail page
+// generates shortURL and redirects to its unique page
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
     res.send('Error. You must first sign in.');
   }
-
   if (req.body.longURL) {
     const shortURL = generateUid();
     urlDatabase[shortURL] = {
@@ -75,13 +74,13 @@ app.post("/urls", (req, res) => {
     };
     res.redirect(`/urls/${shortURL}`);
   }
-
 });
+
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++
 //
 // MAIN PAGE
-// main page with the URLs database
+// ...with URLs database
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -96,7 +95,7 @@ app.get("/urls", (req, res) => {
 //++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-// create a new entry URL
+// creates a new shortURL for users only
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
     res.redirect('/login');
@@ -108,14 +107,14 @@ app.get("/urls/new", (req, res) => {
 });
 
 
-// display the longURL on a page with the new shortURL
+// displays the unique page of the new shortURL
 app.get("/urls/:shortURL", (req, res) => {
-  // logged in user does not own the shortURL
+  // prohibits user from accessing non-owned shortURL
   if (req.session.user_id !== urlDatabase[req.params.shortURL].user_ID) {
     res.send("Error. You do not have permission to access this link. \n");
     res.end();
   }
-  // user is not logged in
+  // prohibits access to shortURL for logged out users 
   if (!req.session.user_id) {
     res.send("Error. You do not have permission to access this link. \n");
     res.end();
@@ -129,7 +128,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
-// delete an entry
+// deletes an entry of shortURL
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!req.session.user_id) {
     res.send("Error. You do not have permission to delete or modify this link. \n");
@@ -141,7 +140,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
-// update already existing shortURL with a different longURL
+// updates already existing shortURL with a longURL
 app.post("/urls/:shortURL/update", (req, res) => {
   if (!req.session.user_id) {
     res.send("Error. You do not have permission to delete or modify this link. \n");
@@ -156,21 +155,20 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 
-// link to edit shortURL page, from home page
+// links to the edit page of shortURL, usually from home page
 app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
 
-
-// REGISTRATION
+// registers a new user only
 app.post('/register', (req, res) => {
-  console.log("New user registering!");
+  console.log("log: New user registering!");
   const userEmail = req.body.email;
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   const user_ID = generateUid();
 
-  // prohibit empty fields
+  // prohibits empty fields
   if (!userEmail || !hashedPassword) {
     res.statusCode = 400;
     res.send("error 400. Invalid email or password");
@@ -181,20 +179,20 @@ app.post('/register', (req, res) => {
     res.send("error 400. Email already exists.");
     res.end();
   }
-  //setting the cookie and adding new user info to database
+  // sets the cookie and adding new user info to database
   req.session.user_id = user_ID;
   users[req.session.user_id] = {
     id: user_ID,
     email: userEmail,
     password: hashedPassword
   };
-  console.log(users[user_ID]);
   res.redirect('/urls');
 });
 
 
+// displays the registration page with form
 app.get('/registration', (req, res) => {
-  console.log('log rendering registration');
+  console.log('log: Rendering registration');
   if (req.session.user_id) {
     res.redirect('/urls');
   }
@@ -205,12 +203,9 @@ app.get('/registration', (req, res) => {
 });
 
 
-
-//
-// LOGIN
-//
+// logs in an existing user, with correct fields
 app.post('/login', (req, res) => {
-  console.log('log: client attempting to log in');
+  console.log('log: Client attempting to log in');
   const matchUser = getUserByEmail(req.body.email, users);
   if (!matchUser) {
     res.statusCode = 403;
@@ -228,6 +223,7 @@ app.post('/login', (req, res) => {
 });
 
 
+// displays the login page with form
 app.get('/login', (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls');
@@ -239,7 +235,7 @@ app.get('/login', (req, res) => {
 });
 
 
-// clear cookie when clicking logout button, and redirects to home
+// clears cookie when clicking logout button, and redirects to home
 app.post('/logout', (req, res) => {
   if (req.session.user_id) {
     res.clearCookie("session.sig");
@@ -249,7 +245,7 @@ app.post('/logout', (req, res) => {
 });
 
 
-// redirecting to specific link outside of tinyapp
+// redirects to specific external link
 app.get('/u/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.send("error. That short URL does not exist.");
@@ -261,7 +257,7 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 
-// Error 404
+// defaults an Error 404
 app.get('*', (req, res) => {
   res.send('ERROR 404');
   res.end();
