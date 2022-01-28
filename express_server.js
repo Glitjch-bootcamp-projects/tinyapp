@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const generateHelpers = require('./helpers');
 
-const {verifyUserByEmailorPassword, generateUid}  = generateHelpers(bcrypt);
+const { generateUid, getUserByEmail, verifyPassword }  = generateHelpers(bcrypt);
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -49,6 +49,7 @@ const users = {
     password: '$2a$10$LkHgq6hcVSBZywIhRapfSOJPi1S33lGvYX1Pu4Ne/CeweCa1OnfeK'
   }
 };
+
 //******************************ROUTES*********************************/
 
 // redirect to urls because nothing is on root page
@@ -153,22 +154,21 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 
 
-// ===================================================
-// 
+
 // REGISTRATION
 app.post('/register', (req, res) => {
   console.log("New user registered!");
   const userEmail = req.body.email;
-  const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   const user_ID = generateUid();
 
+  // prohibit empty fields
   if (!userEmail || !hashedPassword) {
     res.statusCode = 400;
     res.send("error 400. Invalid email or password");
     res.end();
   }
-  if (verifyUserByEmailorPassword(userEmail, password, users)) {
+  if (getUserByEmail(userEmail, users)) {
     res.statusCode = 400;
     res.send("error 400. Email already exists.");
     res.end();
@@ -183,8 +183,8 @@ app.post('/register', (req, res) => {
   console.log(users[user_ID]);
   res.redirect('/urls');
 });
-//
-//         
+
+ 
 app.get('/registration', (req, res) => {
   console.log('log rendering registration');
   if (!req.session.user_id) {
@@ -197,7 +197,7 @@ app.get('/registration', (req, res) => {
     res.redirect('/urls');
   }
 });
-//===================================================
+
 
 
 //
@@ -206,15 +206,25 @@ app.get('/registration', (req, res) => {
 app.post('/login', (req, res) => {
   console.log('log: client attempting to log in');
   const userEmail = req.body.email;
-  login = true;
-  const user = verifyUserByEmailorPassword(userEmail, req.body.password, users, login);
-  if (!user) {
-    res.statusCode = 403;
-    res.send('Error 403. Password or username do not match.');
-    res.end();
+  const user = getUserByEmail(userEmail, users);
+  console.log('log', user);
+  console.log('log', typeof user);
+
+  if (user && verifyPassword(user, req.body.password, users)) {
+    console.log('log check inside condition');
+    req.session.user_id = user;
+    res.redirect('/urls');
   }
-  req.session.user_id = user.id;
-  res.redirect('/urls');
+  // login = true;
+  // const user = verifyUserByEmailorPassword(userEmail, users, req.body.password, login);
+  // if (!user) {
+  //   res.statusCode = 403;
+  //   res.send('Error 403. Password or username do not match.');
+  //   res.end();
+  // }
+  res.statusCode = 403;
+  res.send('Error 403. Password or username do not match.');
+  res.end();
 });
 
 app.get('/login', (req, res) => {
