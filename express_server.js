@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const generateHelpers = require('./helpers');
 
-const { generateUid, getUserByEmail, verifyPassword }  = generateHelpers(bcrypt);
+const { generateUid, getUserByEmail, verifyPassword } = generateHelpers(bcrypt);
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -52,7 +52,7 @@ const users = {
 
 //******************************ROUTES*********************************/
 
-// redirect to urls because nothing is on root page
+// redirect to main
 app.get("/", (req, res) => {
   res.redirect('/urls');
 });
@@ -60,20 +60,20 @@ app.get("/", (req, res) => {
 
 // generate shortURL and redirect to its detail page
 app.post("/urls", (req, res) => {
-  if (req.session.user_id) {
-    if (req.body.longURL) {
-      const shortURL = generateUid();
-      urlDatabase[shortURL] = {
-        longURL: req.body.longURL,
-        user_ID: req.session.user_id
-      };
-      res.redirect(`/urls/${shortURL}`);
-    }
-  } else {
+  if (!req.session.user_id) {
     res.send('Error. You must first sign in.');
   }
-});
 
+  if (req.body.longURL) {
+    const shortURL = generateUid();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      user_ID: req.session.user_id
+    };
+    res.redirect(`/urls/${shortURL}`);
+  }
+
+});
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++
 //
@@ -116,7 +116,7 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     user: users[req.session.user_id],
-  }
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -184,7 +184,7 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
- 
+
 app.get('/registration', (req, res) => {
   console.log('log rendering registration');
   if (!req.session.user_id) {
@@ -205,27 +205,22 @@ app.get('/registration', (req, res) => {
 //
 app.post('/login', (req, res) => {
   console.log('log: client attempting to log in');
-  const userEmail = req.body.email;
-  const user = getUserByEmail(userEmail, users);
-  console.log('log', user);
-  console.log('log', typeof user);
-
-  if (user && verifyPassword(user, req.body.password, users)) {
-    console.log('log check inside condition');
-    req.session.user_id = user;
-    res.redirect('/urls');
+  const matchUser = getUserByEmail(req.body.email, users);
+  if (!matchUser) {
+    res.statusCode = 403;
+    res.send('Error 403. Password or username do not match.');
+    res.end();
   }
-  // login = true;
-  // const user = verifyUserByEmailorPassword(userEmail, users, req.body.password, login);
-  // if (!user) {
-  //   res.statusCode = 403;
-  //   res.send('Error 403. Password or username do not match.');
-  //   res.end();
-  // }
-  res.statusCode = 403;
-  res.send('Error 403. Password or username do not match.');
-  res.end();
+  const matchPassword = verifyPassword(matchUser, req.body.password, users);
+  if (!matchPassword) {
+    res.statusCode = 403;
+    res.send('Error 403. Password or username do not match.');
+    res.end();
+  }
+  req.session.user_id = matchUser;
+  res.redirect('/urls');
 });
+
 
 app.get('/login', (req, res) => {
   if (!req.session.user_id) {
@@ -252,13 +247,13 @@ app.post('/logout', (req, res) => {
 // redirecting to specific link outside of tinyapp
 app.get('/u/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.send("error. That short URL does not exist.")
-    res.end()
+    res.send("error. That short URL does not exist.");
+    res.end();
   }
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
-})
+});
 
 
 // Error 404
