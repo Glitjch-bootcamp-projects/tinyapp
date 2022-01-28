@@ -4,9 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["The user's homepage before logging in."](#)
+!["The user's homepage before logging in."](https://github.com/glitjch/tinyapp/blob/main/docs/urls-home-page.png?raw=true)
 
-!["A new shortened URL created after submitting a regular but long URL"](#)
+!["The user's homepage after logged in."](https://github.com/glitjch/tinyapp/blob/main/docs/urls-home-logged-in-page.png?raw=true)
+
+!["A new shortened URL created after submitting a regular but long URL"](https://github.com/glitjch/tinyapp/blob/main/docs/new-url-page.png?raw=true)
 
 ## Dependencies
 
