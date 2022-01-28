@@ -6,14 +6,18 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const bcrypt = require('bcryptjs');
 const bcryptjs = require("bcryptjs");
+const cookieSession = require('cookie-session');
 
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(morgan('dev'));
-
+app.use(cookieSession({
+  name: 'session',
+  keys: ["the wheels on the bus go square and square", "jonny", "bonnie"],
+}));
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -25,7 +29,7 @@ const generateUid = function () {
 };
 
 
-const verifyUserByEmail = function (email, password) {
+const verifyUserByEmailandPassword = function (email, password) {
   for (const id in users) {
     if (users[id].email === email) {
       const compare = bcrypt.compareSync(password, users[id].password);
@@ -38,6 +42,14 @@ const verifyUserByEmail = function (email, password) {
   return false;
 };
 
+const emailAlreadyExists = function (email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true;
+    }
+  }
+  return false;
+}
 
 
 const passwordMatches = function (email, password) {
@@ -87,15 +99,17 @@ app.get("/", (req, res) => {
 });
 
 
-// lead to a page to display the LongUrl after the shortURL is generated
+// generate shortURL and redirect to its detail page
 app.post("/urls", (req, res) => {
-  if (req.cookies["user_ID"]) {
-    const shortURL = generateUid();
-    urlDatabase[shortURL] = {
-      longURL: req.body.longURL,
-      user_ID: req.cookies['user_ID']
-    };
-    res.redirect(`/urls/${shortURL}`);
+  if (req.session.user_id) {
+    if (req.body.longURL) {
+      const shortURL = generateUid();
+      urlDatabase[shortURL] = {
+        longURL: req.body.longURL,
+        user_ID: req.session.user_id
+      };
+      res.redirect(`/urls/${shortURL}`);
+    }
   } else {
     res.send('Error. You must first sign in.');
   }
@@ -109,8 +123,8 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_ID],
-    user_ID: req.cookies['user_ID'],
+    user: users[req.session.user_id],
+    user_ID: req.session.user_id,
   };
   res.render("urls_index", templateVars);
 });
@@ -122,9 +136,9 @@ app.get("/urls", (req, res) => {
 
 // create a new entry URL
 app.get("/urls/new", (req, res) => {
-  if (req.cookies["user_ID"]) {
+  if (req.session.user_id) {
     const templateVars = {
-      user: users[req.cookies.user_ID],
+      user: users[req.session.user_id],
     };
     res.render("urls_new", templateVars);
   } else {
@@ -133,46 +147,44 @@ app.get("/urls/new", (req, res) => {
 });
 
 
-// display the long url on a new page with the new short URL generation 
+// display the longURL on a page with the new shortURL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.cookies.user_ID],
-  };
-  const shortURL = req.params.shortURL;
-  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
-    res.render("urls_show", templateVars);
-  } else {
+  if (!req.session.user_id) {
     res.send("Error. You do not have permission to access this link. \n");
     res.end();
   }
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: users[req.session.user_id],
+  }
+  res.render("urls_show", templateVars);
 });
 
 
 // delete an entry
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
-    delete urlDatabase[shortURL];
-    res.redirect('/urls');
-  } else {
+  if (!req.session.user_id) {
     res.send("Error. You do not have permission to delete or modify this link. \n");
     res.end();
   }
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
 });
 
 
 // update already existing shortURL with a different longURL
 app.post("/urls/:shortURL/update", (req, res) => {
-  const longURL = req.body.longURL;
-  const shortURL = req.params.shortURL;
-  if (urlDatabase[shortURL].user_ID === req.cookies.user_ID) {
-    urlDatabase[shortURL].longURL = longURL;
-    res.redirect('/urls');
-  } else {
+  if (!req.session.user_id) {
     res.send("Error. You do not have permission to delete or modify this link. \n");
     res.end();
+  }
+  const longURL = req.body.longURL;
+  const shortURL = req.params.shortURL;
+  if (longURL) {
+    urlDatabase[shortURL].longURL = longURL;
+    res.redirect('/urls');
   }
 });
 
@@ -190,7 +202,7 @@ app.post('/register', (req, res) => {
   console.log("New user registered!");
   const userEmail = req.body.email;
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-  const generateID = generateUid();
+  const user_ID = generateUid();
 
   if (!userEmail || !hashedPassword) {
     res.statusCode = 400;
@@ -202,22 +214,24 @@ app.post('/register', (req, res) => {
     res.send("error 400. Email already exists.");
     res.end();
   }
-
-  users[generateID] = {
-    id: generateID,
+  //setting the cookie and adding new user info to database
+  req.session.user_id = user_ID;
+  users[req.session.user_id] = {
+    id: user_ID,
     email: userEmail,
     password: hashedPassword
   };
-  console.log(users[generateID]);
-  res.cookie('user_ID', generateID);
+  console.log(users[user_ID]);
   res.redirect('/urls');
 });
 //
 //         
 app.get('/registration', (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  console.log('log rendering registration');
+  if (!req.session.user_id) {
+    console.log('log check');
     const templateVars = {
-      user: users[req.cookies.user_ID],
+      user: req.session.user_id,
     };
     res.render('registration', templateVars);
   } else {
@@ -231,23 +245,22 @@ app.get('/registration', (req, res) => {
 // LOGIN
 //
 app.post('/login', (req, res) => {
-  console.log('log /login');
+  console.log('log: client attempting to log in');
   const userEmail = req.body.email;
-  const user = verifyUserByEmail(userEmail, req.body.password);
+  const user = verifyUserByEmailandPassword(userEmail, req.body.password);
   if (!user) {
     res.statusCode = 403;
-    res.send('Error 403. Password does not match.');
+    res.send('Error 403. Password or username do not match.');
     res.end();
   }
-  res.cookie('user_ID', user.id);
+  req.session.user_id = user.id;
   res.redirect('/urls');
 });
-//
-// 
+
 app.get('/login', (req, res) => {
-  if (!req.cookies["user_ID"]) {
+  if (!req.session.user_id) {
     const templateVars = {
-      user: users[req.cookies.user_ID],
+      user: users[req.session.user_id],
     };
     res.render('login', templateVars);
   } else {
@@ -258,8 +271,11 @@ app.get('/login', (req, res) => {
 
 // clear cookie when clicking logout button, and redirects to home
 app.post('/logout', (req, res) => {
-  res.clearCookie("user_ID");
-  res.redirect('/urls');
+  if (req.session.user_id) {
+    res.clearCookie("session.sig");
+    res.clearCookie("session");
+    res.redirect('/urls');
+  }
 });
 
 
