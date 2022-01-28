@@ -54,6 +54,9 @@ const users = {
 
 // redirect to main
 app.get("/", (req, res) => {
+  if (!req.session.user_id) {
+    res.redirect('/login');
+  }
   res.redirect('/urls');
 });
 
@@ -108,6 +111,12 @@ app.get("/urls/new", (req, res) => {
 
 // display the longURL on a page with the new shortURL
 app.get("/urls/:shortURL", (req, res) => {
+  // logged in user does not own the shortURL
+  if(req.session.user_id !== urlDatabase[req.params.shortURL].user_ID) {
+    res.send("Error. You do not have permission to access this link. \n");
+    res.end();
+  }
+  // user is not logged in
   if (!req.session.user_id) {
     res.send("Error. You do not have permission to access this link. \n");
     res.end();
@@ -157,7 +166,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 // REGISTRATION
 app.post('/register', (req, res) => {
-  console.log("New user registered!");
+  console.log("New user registering!");
   const userEmail = req.body.email;
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   const user_ID = generateUid();
