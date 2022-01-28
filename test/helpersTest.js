@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const bcrypt = require('bcryptjs');
 const generateHelpers = require('../helpers.js');
-const { getUserByEmail, generateUid }  = generateHelpers(bcrypt);
+const { getUserByEmail }  = generateHelpers(bcrypt);
 
 const testUsers = {
   "userRandomID": {
@@ -29,5 +29,3 @@ describe('getUserByEmail', function() {
     assert.equal(user, expectedUserID);
   });
 });
-
-// could not get testing bcrypt to work here to test verifyPassword.

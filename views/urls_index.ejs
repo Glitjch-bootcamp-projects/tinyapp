@@ -30,32 +30,34 @@
         <tbody>
           <% for (let url in urls) { %>
             <!-- ***NOTE01 - line immediately below: ONLY display URLs with matching logged in user_ID -->
-            <% if (urls[url].user_ID === user_ID) { %>
-            <tr>
-              <td>
-                <a href="/urls/<%= url %>"><%= url %></a>
-              </td>
-              <td>
-                <%= urls[url].longURL %>
-              </td>
-              <td>
-                <form method="POST" action="/urls/<%= url %>/edit"><button>edit</button></form>
-              </td>
-              <td>
-                <form method="POST" action="/urls/<%= url %>/delete"><button>DELETE</button></form>
-              </td>
-            </tr>
-            <% } %>
-          <% } %>
+            <% if (urls[url].user_ID===user_ID) { %>
+              <tr>
+                <td>
+                  <a href="/urls/<%= url %>">
+                    <%= url %>
+                  </a>
+                </td>
+                <td>
+                  <%= urls[url].longURL %>
+                </td>
+                <td>
+                  <form method="POST" action="/urls/<%= url %>/edit"><button>edit</button></form>
+                </td>
+                <td>
+                  <form method="POST" action="/urls/<%= url %>/delete"><button>DELETE</button></form>
+                </td>
+              </tr>
+              <% } %>
+                <% } %>
         </tbody>
       </table>
-    <% } else { %>
-      <h2>These URLs are atomic sized.</h2>
-      <h3>Log in to borrow our atom-goggles.</h3>
-      <form method="GET" action="/login">
-        <button class="btn-primary" type="submit">Login</button>
-      </form>
-    <% } %>
+      <% } else { %>
+        <h2>These URLs are atomic sized.</h2>
+        <h3>Log in to borrow our atom-goggles.</h3>
+        <form method="GET" action="/login">
+          <button class="btn-primary" type="submit">Login</button>
+        </form>
+        <% } %>
   </main>
 
   <!-- Bootstrap JS -->
