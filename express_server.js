@@ -98,21 +98,20 @@ app.get("/urls", (req, res) => {
 
 // create a new entry URL
 app.get("/urls/new", (req, res) => {
-  if (req.session.user_id) {
-    const templateVars = {
-      user: users[req.session.user_id],
-    };
-    res.render("urls_new", templateVars);
-  } else {
+  if (!req.session.user_id) {
     res.redirect('/login');
   }
+  const templateVars = {
+    user: users[req.session.user_id],
+  };
+  res.render("urls_new", templateVars);
 });
 
 
 // display the longURL on a page with the new shortURL
 app.get("/urls/:shortURL", (req, res) => {
   // logged in user does not own the shortURL
-  if(req.session.user_id !== urlDatabase[req.params.shortURL].user_ID) {
+  if (req.session.user_id !== urlDatabase[req.params.shortURL].user_ID) {
     res.send("Error. You do not have permission to access this link. \n");
     res.end();
   }
@@ -196,15 +195,13 @@ app.post('/register', (req, res) => {
 
 app.get('/registration', (req, res) => {
   console.log('log rendering registration');
-  if (!req.session.user_id) {
-    console.log('log check');
-    const templateVars = {
-      user: req.session.user_id,
-    };
-    res.render('registration', templateVars);
-  } else {
+  if (req.session.user_id) {
     res.redirect('/urls');
   }
+  const templateVars = {
+    user: req.session.user_id,
+  };
+  res.render('registration', templateVars);
 });
 
 
