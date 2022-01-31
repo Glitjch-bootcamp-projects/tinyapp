@@ -109,6 +109,11 @@ app.get("/urls/new", (req, res) => {
 
 // displays the unique page of the new shortURL
 app.get("/urls/:shortURL", (req, res) => {
+  // displays error if shortURL does not exist
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("error. That short URL does not exist.");
+    res.end();
+  }
   // prohibits user from accessing non-owned shortURL
   if (req.session.user_id !== urlDatabase[req.params.shortURL].user_ID) {
     res.send("Error. You do not have permission to access this link. \n");
@@ -165,13 +170,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post('/register', (req, res) => {
   console.log("log: New user registering!");
   const userEmail = req.body.email;
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-  const user_ID = generateUid();
 
   // prohibits empty fields
-  if (!userEmail || !hashedPassword) {
+  if (!req.body.email || !req.body.password) {
     res.statusCode = 400;
-    res.send("error 400. Invalid email or password");
+    res.send(`error 400. Invalid ${!req.body.email && !req.body.password ? 'email and password' : !req.body.email ? 'email' : 'password'}`);
     res.end();
   }
   if (getUserByEmail(userEmail, users)) {
@@ -179,6 +182,10 @@ app.post('/register', (req, res) => {
     res.send("error 400. Email already exists.");
     res.end();
   }
+
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+  const user_ID = generateUid();
+
   // sets the cookie and adding new user info to database
   req.session.user_id = user_ID;
   users[req.session.user_id] = {
@@ -206,16 +213,19 @@ app.get('/registration', (req, res) => {
 // logs in an existing user, with correct fields
 app.post('/login', (req, res) => {
   console.log('log: Client attempting to log in');
+
+  // displays error if user email is not in users database: Note: matchUser conditions MUST precede matchPassword below.
   const matchUser = getUserByEmail(req.body.email, users);
   if (!matchUser) {
     res.statusCode = 403;
-    res.send('Error 403. Password or username do not match.');
+    res.send('Error 403. Username does not match.');
     res.end();
   }
+  // displays error if user password is incorrect. Note: matchPassword conditions MUST follow matchUser above.
   const matchPassword = verifyPassword(matchUser, req.body.password, users);
   if (!matchPassword) {
     res.statusCode = 403;
-    res.send('Error 403. Password or username do not match.');
+    res.send('Error 403. Password does not match.');
     res.end();
   }
   req.session.user_id = matchUser;
@@ -251,6 +261,7 @@ app.get('/u/:shortURL', (req, res) => {
     res.send("error. That short URL does not exist.");
     res.end();
   }
+  console.log("log", req.ip);
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);

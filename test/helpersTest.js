@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const generateHelpers = require('../helpers.js');
 const { getUserByEmail }  = generateHelpers(bcrypt);
 
+// test cases for specific function performance 
 const testUsers = {
   "userRandomID": {
     id: "userRandomID", 
